@@ -1,0 +1,19 @@
+# Local working material: paper drafts, raw art, scratch assets.
+figure/
+
+# Session-continuity notes: a local working log, not part of the published site.
+HANDOFF.md
+
+# macOS
+.DS_Store
+._*
+
+# Editors
+.vscode/
+.idea/
+
+# Node (only if a build step is ever added)
+node_modules/
+
+# Python (tools/)
+__pycache__/

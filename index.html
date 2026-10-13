@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OdysseyArena: Benchmarking Large Language Models for Long-Horizon, Active and Inductive Interactions</title>
+  <meta name="description"
+    content="OdysseyArena evaluates LLM agents on environments whose rules are hidden: agents must discover the transition dynamics through their own actions, over hundreds of steps, before they can plan.">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#f4f7f6">
+
+  <link rel="icon" href="public/favicon.ico" sizes="any">
+  <link rel="icon" type="image/svg+xml" href="public/logo.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="public/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="public/favicon-16.png">
+  <link rel="apple-touch-icon" href="public/apple-touch-icon.png">
+
+  <!-- Open Graph / Twitter. Absolute URLs are required by social scrapers.
+       The page is served at https://os-copilot.github.io/OdysseyArena-Home/;
+       update every absolute URL together if the host changes. -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://os-copilot.github.io/OdysseyArena-Home/">
+  <meta property="og:site_name" content="OdysseyArena">
+  <meta property="og:title" content="OdysseyArena: Benchmarking LLMs for Long-Horizon, Active and Inductive Interactions">
+  <meta property="og:description"
+    content="Environments whose rules are hidden. Agents must discover the transition dynamics through their own actions before they can plan.">
+  <meta property="og:image" content="https://os-copilot.github.io/OdysseyArena-Home/public/social/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@qiushi_sun">
+  <meta name="twitter:title" content="OdysseyArena: Benchmarking LLMs for Long-Horizon, Active and Inductive Interactions">
+  <meta name="twitter:description"
+    content="Environments whose rules are hidden. Agents must discover the transition dynamics through their own actions before they can plan.">
+  <meta name="twitter:image" content="https://os-copilot.github.io/OdysseyArena-Home/public/social/og-image.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="static/css/main.css">
+  <link rel="stylesheet" href="static/css/hero.css">
+  <!-- Reveal-on-scroll hides content until JS un-hides it, so only opt in when
+       JS is running; and the theme must be set before first paint. Light is the
+       default; a stored choice wins. -->
+  <script>
+    (function () {
+      var d = document.documentElement;
+      d.className += " js";
+      var t = (location.search.match(/[?&]theme=(light|dark)/) || [])[1];
+      if (!t) { try { t = localStorage.getItem("odyssey-theme"); } catch (e) { /* private mode */ } }
+      d.setAttribute("data-theme", t === "dark" ? "dark" : "light");
+    })();
+  </script>
+</head>
+
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <div class="cosmos" aria-hidden="true"></div>
+
+  <!-- ==================================================================== -->
+  <!-- Navigation                                                            -->
+  <!-- ==================================================================== -->
+  <nav class="nav" id="nav">
+    <div class="wrap">
+      <a class="nav-brand" href="#top">
+        <img src="public/logo.svg" alt="">
+        <span>OdysseyArena</span>
+      </a>
+      <button class="icon-btn nav-toggle" id="navToggle" aria-expanded="false" aria-controls="navLinks" aria-label="Menu">
+        <svg aria-hidden="true" width="17" height="17" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6">
+          <path d="M2 4h12M2 8h12M2 12h12" stroke-linecap="round" />
+        </svg>
+      </button>
+      <ul class="nav-links" id="navLinks">
+        <li class="nav-more" id="navMore" data-open="false">
+          <button type="button" aria-expanded="false" aria-haspopup="true">
+            More research
+            <svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+              <path d="M1.5 3.5 5 7l3.5-3.5" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </button>
+          <ul>
+            <li><a href="https://os-copilot.github.io/OSReward-Home/" target="_blank" rel="noopener">
+              <img src="public/logos/projects/osreward.png" alt="">
+              <span>OSReward <small>CUA Reward Eval &amp; Open Models</small></span></a></li>
+            <li><a href="https://os-copilot.github.io/OpenMobile2-Home/" target="_blank" rel="noopener">
+              <img src="public/logos/projects/openmobile.png" alt="">
+              <span>OpenMobile-2 <small>Versatile Mobile Agents</small></span></a></li>
+            <li><a href="https://qiushisun.github.io/OS-Sentinel-Home/" target="_blank" rel="noopener">
+              <img src="public/logos/projects/os-sentinel.png" alt="">
+              <span>OS-Sentinel <small>Mobile GUI Safety</small></span></a></li>
+            <li><a href="https://qiushisun.github.io/ScienceBoard-Home/" target="_blank" rel="noopener">
+              <img src="public/logos/projects/scienceboard.png" alt="">
+              <span>ScienceBoard <small>CUA for Science</small></span></a></li>
+            <li><a href="https://qiushisun.github.io/OS-Genesis-Home/" target="_blank" rel="noopener">
+              <img src="public/logos/projects/os-genesis.png" alt="">
+              <span>OS-Genesis <small>Annotation-Free Trajectory Synthesis</small></span></a></li>
+            <li><a href="https://osatlas.github.io/" target="_blank" rel="noopener">
+              <img src="public/logos/projects/os-atlas.png" alt="">
+              <span>OS-Atlas <small>GUI Action Foundation Model</small></span></a></li>
+            <li><a href="https://njucckevin.github.io/openmobile/" target="_blank" rel="noopener">
+              <img src="public/logos/projects/openmobile.png" alt="">
+              <span>OpenMobile <small>Open Mobile Agents</small></span></a></li>
+            <li><a href="https://aclanthology.org/2024.acl-long.505" target="_blank" rel="noopener">
+              <img src="public/logos/projects/seeclick.png" alt="">
+              <span>SeeClick <small>GUI Grounding</small></span></a></li>
+          </ul>
+        </li>
+        <!-- Section links double as the scroll-spy list (main.js reads them). -->
+        <li><a href="#overview">Overview</a></li>
+        <li><a href="#environments">Environments</a></li>
+        <li><a href="#benchmark">Benchmark</a></li>
+        <li><a href="#results">Results</a></li>
+        <li><a href="#analysis">Analysis</a></li>
+        <li><a href="#resources">Resources</a></li>
+      </ul>
+      <div class="nav-tools">
+        <button class="icon-btn" id="themeToggle" type="button" aria-label="Switch to dark theme">
+          <svg class="i-moon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
+            <path d="M14 9.3A6 6 0 0 1 6.7 2a6.2 6.2 0 1 0 7.3 7.3Z" stroke-linejoin="round" />
+          </svg>
+          <svg class="i-sun" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
+            <circle cx="8" cy="8" r="3.1" />
+            <path d="M8 1v1.7M8 13.3V15M1 8h1.7M13.3 8H15M3 3l1.2 1.2M11.8 11.8 13 13M13 3l-1.2 1.2M4.2 11.8 3 13" stroke-linecap="round" />
+          </svg>
+        </button>
+        <a class="icon-btn" href="https://github.com/xufangzhi/Odyssey-Arena" target="_blank" rel="noopener" aria-label="GitHub">
+          <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8a8 8 0 0 0 5.47 7.59c.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.4 7.4 0 0 1 2-.27c.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z" /></svg>
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ==================================================================== -->
+  <!-- Hero: content left, the playable environment right                    -->
+  <!-- ==================================================================== -->
+  <header class="hero" id="top">
+    <div class="wrap wrap-wide hero-split">
+      <div class="hero-content">
+        <h1><span class="grad">OdysseyArena</span></h1>
+        <p class="tagline">Benchmarking Large Language Models for Long-Horizon, Active and Inductive Interactions</p>
+        <!-- TODO: venue line on acceptance. <p class="venue">…</p> -->
+
+        <p class="lede">Most agent benchmarks hand the agent the rules and score how well it follows them.
+          OdysseyArena hides them. Its environments evolve under latent transition laws that an agent must
+          discover through its own actions, over hundreds of steps, before it can plan.</p>
+
+        <ul class="bullets">
+          <li>
+            <span class="b-ico" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.6 10.8c.6.5.6 1.2.6 1.7V16h6v-.5c0-.5 0-1.2.6-1.7A6 6 0 0 0 12 3Z" />
+              </svg>
+            </span>
+            <span><b>Inductive evaluation</b>: four structural primitives, from Boolean couplings to dependency
+              graphs, each turned into an environment whose rules are never shown to the agent</span>
+          </li>
+          <li>
+            <span class="b-ico" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 12h4l3-8 4 16 3-8h4" />
+              </svg>
+            </span>
+            <span><b>OdysseyArena-Lite and OdysseyArena-Challenge</b>: a standardized suite for routine evaluation,
+              and a stress test whose trajectories run past a thousand steps</span>
+          </li>
+          <li>
+            <span class="b-ico" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+                <path d="M4 19V9M10 19V5M16 19v-6M22 19H2" />
+              </svg>
+            </span>
+            <span><b>Findings on frontier LLMs</b>: near-perfect once the rules are given, far below humans without
+              them, with the failures traced to exploration, memory and action loops rather than planning</span>
+          </li>
+        </ul>
+
+        <!-- Release links. Paper on arXiv; code and the task files on GitHub. -->
+        <div class="links">
+          <a class="btn btn-primary" data-link="paper" href="https://arxiv.org/abs/2602.05843" target="_blank" rel="noopener">
+            <svg viewBox="0 0 17.732 24.269" aria-hidden="true">
+              <g transform="translate(-566.984 -271.548)">
+                <path d="M573.549,280.916l2.266,2.738,6.674-7.84c.353-.47.52-.717.353-1.117a1.218,1.218,0,0,0-1.061-.748h0a.953.953,0,0,0-.712.262Z" fill="currentColor" />
+                <path d="M579.525,282.225l-10.606-10.174a1.413,1.413,0,0,0-.834-.5,1.09,1.09,0,0,0-1.027.66c-.167.4-.047.681.319,1.206l8.44,10.242h0l-6.282,7.716a1.336,1.336,0,0,0-.323,1.3,1.114,1.114,0,0,0,1.04.69A.992.992,0,0,0,571,293l8.519-7.92A1.924,1.924,0,0,0,579.525,282.225Z" fill="#b31b1b" />
+                <path d="M584.32,293.912l-8.525-10.275,0,0L573.53,280.9l-1.389,1.254a2.063,2.063,0,0,0,0,2.965l10.812,10.419a.925.925,0,0,0,.742.282,1.039,1.039,0,0,0,.953-.667A1.261,1.261,0,0,0,584.32,293.912Z" fill="currentColor" />
+              </g>
+            </svg>
+            Paper
+          </a>
+          <a class="btn" data-link="code" href="https://github.com/xufangzhi/Odyssey-Arena" target="_blank" rel="noopener">
+            <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+              <path d="M8 0C3.58 0 0 3.58 0 8a8 8 0 0 0 5.47 7.59c.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.4 7.4 0 0 1 2-.27c.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z" />
+            </svg>
+            Code
+          </a>
+          <a class="btn" data-link="benchmark" href="https://github.com/xufangzhi/Odyssey-Arena/tree/main/test_data" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+              <ellipse cx="12" cy="6" rx="8" ry="3" />
+              <path d="M4 6v6c0 1.66 3.58 3 8 3s8-1.34 8-3V6M4 12v6c0 1.66 3.58 3 8 3s8-1.34 8-3v-6" />
+            </svg>
+            Benchmark
+          </a>
+          <a class="btn" href="#results">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+              <path d="M8 21h8M12 17v4M5 3h14v5a7 7 0 0 1-14 0V3Z" stroke-linejoin="round" />
+              <path d="M5 5H3v2a3 3 0 0 0 3 3M19 5h2v2a3 3 0 0 1-3 3" stroke-linejoin="round" />
+            </svg>
+            Leaderboard
+          </a>
+        </div>
+      </div>
+
+      <!-- Key art: the four environments, live. hero.js runs a scripted agent on
+           a fresh instance of each; a click opens that environment below. -->
+      <figure class="hero-art">
+        <div id="arena" aria-label="The four environments, each played live by a scripted agent"></div>
+        <figcaption>Four environments, live. Hover to pause; click one to step through a real trajectory or play it yourself.</figcaption>
+      </figure>
+    </div>
+  </header>
+
+  <!-- Byline. Equal contribution is marked by colour (the .eq authors).
+       TODO: affiliations once the list is settled (crests as 96x96 PNG pairs
+       in public/affil/, listed in an .affils row under the names). -->
+  <section class="byline" aria-label="Authors">
+    <div class="panel">
+      <p class="authors">
+        <span class="lead">
+          <span class="au eq">Fangzhi Xu</span>,
+          <span class="au eq">Hang Yan</span>,
+          <span class="au eq"><a href="https://qiushisun.github.io/" target="_blank" rel="noopener">Qiushi Sun</a><sup class="author-mark" aria-label="Corresponding author" title="Corresponding author">✉&#xfe0e;</sup></span>
+        </span>
+        <span class="rest">
+          <span class="au">Jinyang Wu</span>,
+          <span class="au">Zixian Huang</span>,
+          <span class="au">Muye Huang</span>,
+          <span class="au">Jingyang Gong</span>,
+          <span class="au">Zichen Ding</span>,
+          <span class="au">Kanzhi Cheng</span>,
+          <span class="au">Yian Wang</span>,
+          <span class="au">Xinyu Che</span>,
+          <span class="au">Zeyi Sun</span>,
+          <span class="au">Jian Zhang</span>,
+          <span class="au">Zhangyue Yin</span>,
+          <span class="au">Haoran Luo</span>,
+          <span class="au">Ben Kao</span>,
+          <span class="au">Qika Lin<sup class="author-mark" aria-label="Corresponding author" title="Corresponding author">✉&#xfe0e;</sup></span>
+        </span>
+      </p>
+      <p class="author-legend">
+        <span><span class="eq-key">Highlighted</span> authors contributed equally.</span>
+        <span class="author-role"><span class="role-mark" aria-hidden="true">✉&#xfe0e;</span> Corresponding authors</span>
+      </p>
+    </div>
+  </section>
+
+  <section class="news-band" aria-label="News">
+    <div class="wrap">
+      <div class="card news rise">
+        <span class="eyebrow">News</span>
+        <ul>
+          <li><time datetime="2026-02">Feb 2026</time>The paper is on <a href="https://arxiv.org/abs/2602.05843" target="_blank" rel="noopener">arXiv</a>.</li>
+          <!-- TODO: venue, further releases. -->
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <main id="main">
+
+    <!-- ================================================================== -->
+    <!-- Overview                                                            -->
+    <!-- ================================================================== -->
+    <section class="band-tight" id="overview">
+      <div class="wrap">
+        <div class="section-head">
+          <span class="eyebrow">Overview</span>
+          <h2 class="section-title">Agents that must <span class="accent">discover the rules</span></h2>
+          <p class="section-sub">Interactive benchmarks so far test a deductive mode: the agent is told how the
+            world works and is scored on carrying out a task in it. Deployment also needs the inductive mode,
+            where the agent works out how the world works from what its actions do.</p>
+        </div>
+
+        <div class="overview-grid rise">
+          <div class="card dg-card">
+            <div class="dg">
+              <div class="dg-pane ded">
+                <h4><i></i>Deductive</h4>
+                <svg viewBox="0 0 300 150" aria-label="Deductive setting: rules are given to the agent, which acts and observes">
+                  <defs>
+                    <marker id="arD" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                      <path d="M0 0L10 5 0 10z" fill="var(--blue-400)" />
+                    </marker>
+                  </defs>
+                  <g transform="translate(16,38)">
+                    <rect class="rules-doc" x="0" y="0" width="54" height="66" rx="6" />
+                    <line class="rules-line" x1="11" y1="17" x2="43" y2="17" />
+                    <line class="rules-line" x1="11" y1="29" x2="39" y2="29" />
+                    <line class="rules-line" x1="11" y1="41" x2="43" y2="41" />
+                    <line class="rules-line" x1="11" y1="53" x2="33" y2="53" />
+                  </g>
+                  <text class="lbl k" x="43" y="124" text-anchor="middle">rules</text>
+                  <path d="M76 71H114" fill="none" stroke="var(--blue-400)" stroke-width="1.8" marker-end="url(#arD)" />
+                  <g transform="translate(120,48)">
+                    <line x1="22" y1="2" x2="22" y2="9" stroke="var(--text-dim)" stroke-width="1.5" />
+                    <circle cx="22" cy="0" r="2.4" class="bot-eye" />
+                    <rect class="bot" x="2" y="9" width="40" height="34" rx="9" />
+                    <circle class="bot-eye" cx="15" cy="25" r="3.4" />
+                    <circle class="bot-eye" cx="29" cy="25" r="3.4" />
+                  </g>
+                  <text class="lbl k" x="142" y="124" text-anchor="middle">agent</text>
+                  <g transform="translate(246,71)">
+                    <circle class="world" r="27" />
+                    <ellipse class="world-h" rx="11" ry="27" />
+                    <ellipse class="world-h" rx="27" ry="10" />
+                  </g>
+                  <text class="lbl k" x="246" y="124" text-anchor="middle">environment</text>
+                  <path class="arc" d="M168 56C190 34 206 34 222 48" marker-end="url(#arD)" />
+                  <text class="lbl" x="196" y="32" text-anchor="middle">act</text>
+                  <path class="arc" d="M220 96C206 110 190 110 168 88" marker-end="url(#arD)" />
+                  <text class="lbl" x="196" y="119" text-anchor="middle">observe</text>
+                </svg>
+                <p>The transition rules arrive in the prompt. Success measures how well the agent applies them.</p>
+              </div>
+              <div class="dg-pane ind">
+                <h4><i></i>Inductive</h4>
+                <svg viewBox="0 0 300 150" aria-label="Inductive setting: the agent probes an unknown environment and induces its rules">
+                  <defs>
+                    <marker id="arI" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                      <path d="M0 0L10 5 0 10z" fill="var(--amber-500)" />
+                    </marker>
+                  </defs>
+                  <g transform="translate(14,10)">
+                    <rect class="thought" x="0" y="0" width="76" height="54" rx="10" />
+                    <g>
+                      <line class="thought-line" x1="12" y1="16" x2="62" y2="16" />
+                      <line class="thought-line" x1="12" y1="28" x2="52" y2="28" />
+                      <line class="thought-line" x1="12" y1="40" x2="58" y2="40" />
+                    </g>
+                    <circle class="thought" cx="84" cy="62" r="4" />
+                    <circle class="thought" cx="94" cy="72" r="2.4" />
+                  </g>
+                  <text class="lbl k" x="52" y="80" text-anchor="middle">induced rules</text>
+                  <g transform="translate(96,56)">
+                    <line x1="22" y1="2" x2="22" y2="9" stroke="var(--text-dim)" stroke-width="1.5" />
+                    <circle cx="22" cy="0" r="2.4" class="bot-eye" />
+                    <rect class="bot" x="2" y="9" width="40" height="34" rx="9" />
+                    <circle class="bot-eye" cx="15" cy="25" r="3.4" />
+                    <circle class="bot-eye" cx="29" cy="25" r="3.4" />
+                  </g>
+                  <text class="lbl k" x="118" y="124" text-anchor="middle">agent</text>
+                  <g transform="translate(240,71)">
+                    <circle class="world" r="27" />
+                    <ellipse class="world-h" rx="11" ry="27" />
+                    <ellipse class="world-h" rx="27" ry="10" />
+                    <circle r="11" fill="var(--surface-3)" />
+                    <text class="qmark" x="0" y="6" text-anchor="middle">?</text>
+                  </g>
+                  <text class="lbl k" x="240" y="124" text-anchor="middle">environment</text>
+                  <path class="arc" d="M144 60C172 34 198 34 216 48" marker-end="url(#arI)" />
+                  <text class="lbl" x="180" y="32" text-anchor="middle">act, probe</text>
+                  <path class="arc" d="M214 96C198 110 172 110 144 92" marker-end="url(#arI)" />
+                  <text class="lbl" x="180" y="119" text-anchor="middle">observe, induce</text>
+                </svg>
+                <p>Nothing about the dynamics is given. The agent has to probe, read the feedback and build the
+                  rules itself.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="dims">
+            <div class="cap">
+              <span class="ico" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 17c3-6 5-6 8 0s5 6 8 0" stroke-dasharray="3 2.5" />
+                  <circle cx="21" cy="12" r="2.2" fill="currentColor" stroke="none" />
+                </svg>
+              </span>
+              <div>
+                <h3>Extremely long horizons</h3>
+                <p>Episodes of hundreds to thousands of steps, where strategic coherence and accumulated error
+                  decide the outcome, where most suites stop under fifty.</p>
+              </div>
+            </div>
+            <div class="cap">
+              <span class="ico" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="9" />
+                  <path d="M12 3v3M12 18v3M3 12h3M18 12h3" />
+                  <path d="m15 9-2 5-4 1 1-4 5-2Z" fill="currentColor" stroke="none" opacity="0.85" />
+                </svg>
+              </span>
+              <div>
+                <h3>Active exploration</h3>
+                <p>No fully specified success criterion to execute against. The agent probes, reacts to feedback
+                  and revises its own strategy as it goes.</p>
+              </div>
+            </div>
+            <div class="cap">
+              <span class="ico" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 20h16" />
+                  <path d="M6 20V9l6-4 6 4v11" />
+                  <path d="M12 20v-5" />
+                  <path d="M9 12h6" stroke-dasharray="2 2" />
+                </svg>
+              </span>
+              <div>
+                <h3>Inductive reasoning from interaction</h3>
+                <p>Latent transition laws are inferred from real-time experience, which is what lets an agent
+                  anticipate outcomes and plan instead of react.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card contrib-card rise" style="margin-top:22px">
+          <ol class="contribs">
+            <li><a href="#environments"><b>A new perspective for agent evaluation.</b></a> Agents are scored on
+              what they can discover about an environment's dynamics through long-horizon, active interaction,
+              rather than on following rules they are handed.</li>
+            <li><a href="#benchmark"><b>Reliable and scalable evaluation.</b></a> Four environments built on four
+              structural primitives, each with an unbounded task space; OdysseyArena-Lite fixes a standard suite
+              for efficient, reproducible comparison and OdysseyArena-Challenge stress-tests stability over
+              extreme horizons.</li>
+            <li><a href="#results"><b>Extensive evaluation and insights.</b></a> Frontier and open-weight LLMs,
+              with an analysis that locates the bottleneck in inductive discovery: exploration, memory and action
+              loops, not planning.</li>
+          </ol>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================== -->
+    <!-- Environments                                                        -->
+    <!-- ================================================================== -->
+    <section class="band" id="environments">
+      <div class="wrap">
+        <div class="section-head">
+          <span class="eyebrow">Environments</span>
+          <h2 class="section-title">Four primitives, <span class="accent">four environments</span></h2>
+          <p class="section-sub">Every environment is a transition function the agent cannot see. Each one
+            isolates a different kind of structure to be discovered: Boolean couplings, factors under noise,
+            periodic cycles, and a dependency graph. All four run as lightweight APIs, with no simulator or
+            container to deploy.</p>
+        </div>
+
+        <div class="card ew-card rise" id="env-walk"></div>
+        <p class="wt-note">Trajectories follow the demonstrations in the paper; the prices, news and package names
+          are schematic. Use the arrow keys or Play to step through.</p>
+      </div>
+    </section>
+
+    <!-- ================================================================== -->
+    <!-- Benchmark                                                           -->
+    <!-- ================================================================== -->
+    <section class="band" id="benchmark">
+      <div class="wrap">
+        <div class="section-head">
+          <span class="eyebrow">Benchmark</span>
+          <h2 class="section-title">Two suites from <span class="accent">one task space</span></h2>
+          <p class="section-sub">Each environment generates tasks from a bounded parameter range. A task is a
+            structural configuration that stays fixed for the episode plus a pre-computed temporal trajectory,
+            so every model faces exactly the same world and every instance is verified solvable.</p>
+        </div>
+
+        <div class="suites rise">
+          <div class="card suite lite">
+            <span class="tag"><i></i>Standard evaluation</span>
+            <h3>OdysseyArena-Lite</h3>
+            <p>The suite behind every result on this page: a tractable parameter range, run at high throughput,
+              with horizons long enough that nothing short of rule induction gets through.</p>
+            <dl>
+              <dt>Tasks</dt><dd id="lite-tasks"></dd>
+              <dt>Step budget</dt><dd id="lite-steps"></dd>
+              <dt>Protocol</dt><dd id="lite-runs"></dd>
+            </dl>
+            <div class="horizon"><span class="lab">0</span><div class="track"><i id="lite-horizon"></i></div><span class="lab">200 steps</span></div>
+          </div>
+          <div class="card suite chal">
+            <span class="tag"><i></i>Stress test</span>
+            <h3>OdysseyArena-Challenge</h3>
+            <p>The empirical limits of the same parameter ranges, for failure modes that never surface under a
+              standard budget: credit assignment over very long histories and compounding planning errors.</p>
+            <dl>
+              <dt>Tasks</dt><dd id="chal-tasks"></dd>
+              <dt>Horizon</dt><dd id="chal-steps"></dd>
+              <dt>Use</dt><dd>Optional; not part of the main evaluation</dd>
+            </dl>
+            <div class="horizon"><span class="lab">0</span><div class="track"><i id="chal-horizon"></i></div><span class="lab">1,000+ steps</span></div>
+          </div>
+        </div>
+
+        <div class="card bf-card rise" style="margin-top:22px">
+          <div class="chart-head"><h3>From a configuration to a verdict</h3></div>
+          <p class="chart-note">A task is written once as a configuration, generated and validated automatically,
+            then run through one interaction loop: the agent reads the observation and its working memory,
+            emits an action, and the environment's step logic answers.</p>
+          <div class="bf">
+            <div class="bf-col">
+              <div class="bf-node cfg">
+                <h4><span class="k">1</span>Configuration</h4>
+                <p>Entity counts, dependency depth, noise, periods and thresholds, set by hand per difficulty.</p>
+                <span class="ok"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m3 8 3 3 7-7" stroke-linecap="round" stroke-linejoin="round" /></svg>difficulty control</span>
+              </div>
+              <div class="bf-node">
+                <h4><span class="k">2</span>Task generator</h4>
+                <p>Samples the latent rules and the fixed temporal trajectory, then checks a solution exists.</p>
+                <span class="ok"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m3 8 3 3 7-7" stroke-linecap="round" stroke-linejoin="round" /></svg>automatic validation</span>
+              </div>
+              <div class="bf-node">
+                <h4><span class="k">3</span>Config files</h4>
+                <p>One deterministic instance per file; identical for every model and every run.</p>
+              </div>
+            </div>
+            <div class="bf-arrow" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+            </div>
+            <div class="bf-loop" id="bf-loop">
+              <div class="bf-agent">
+                <div>LLM agent<small>thought + action</small></div>
+                <div>Working memory<small>actions and feedback so far</small></div>
+              </div>
+              <div class="bf-wire" aria-hidden="true">
+                <svg viewBox="0 0 420 34">
+                  <path d="M60 2v10q0 8 8 8h142" />
+                  <path d="M360 2v10q0 8-8 8H210" />
+                  <text x="210" y="31" text-anchor="middle">observation in, action out</text>
+                </svg>
+              </div>
+              <div class="ring">
+                <div class="bf-fn"><code>init()</code><small>load the instance</small></div>
+                <div class="bf-fn"><code>step()</code><small>apply the action, return the observation</small></div>
+                <div class="bf-fn"><code>eval()</code><small>check the terminal state</small></div>
+              </div>
+              <div class="bf-out">
+                <span class="win"><i></i>task success</span>
+                <span class="fail"><i></i>task failure</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card rise" style="margin-top:22px">
+          <div class="chart-head"><h3>Against other agent benchmarks</h3></div>
+          <p class="chart-note">Whether a benchmark requires inducing rules, how many steps a task takes (short
+            under fifty, long up to a hundred, extra long beyond), and what has to be deployed to run it.</p>
+          <div class="table-scroll">
+            <table class="cmp">
+              <thead><tr><th>Benchmark</th><th>Inductive</th><th>Horizon</th><th>Deploy</th></tr></thead>
+              <tbody id="cmp-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================== -->
+    <!-- Results                                                             -->
+    <!-- ================================================================== -->
+    <section class="band" id="results">
+      <div class="wrap wrap-wide">
+        <div class="section-head">
+          <span class="eyebrow">Results</span>
+          <h2 class="section-title">How far <span class="accent">frontier models</span> get</h2>
+          <p class="section-sub">Proprietary and open-weight LLMs on OdysseyArena-Lite, four runs per task, against
+            human participants who solved the same instances by trial and error.</p>
+        </div>
+
+        <div class="findings rise">
+          <div class="finding">
+            <span class="k">A</span>
+            <div><b>A wide gap to humans</b>
+              <p>Human participants outperform every evaluated model on Avg@4 in Turn On Lights, AI Trading
+                and Repo System. Gemini 3 Pro Preview leads on Energy Dispatch.</p></div>
+          </div>
+          <div class="finding">
+            <span class="k">B</span>
+            <div><b>Deductive proficiency, inductive deficiency</b>
+              <p>Given the latent rules in the prompt, frontier models reach near-perfect success on Turn On
+                Lights. Without them the same models fall to a fraction. The bottleneck is discovering the
+                dynamics, not executing them.</p></div>
+          </div>
+          <div class="finding">
+            <span class="k">C</span>
+            <div><b>Periodic patterns defeat almost everyone</b>
+              <p>Energy Dispatch needs about twenty steps of observation to pin down an efficiency cycle. Nearly
+                every model fails every task there, and scale alone does not change that.</p></div>
+          </div>
+        </div>
+
+        <div class="card chart-card rise">
+          <div class="chart-head"><h3>Leaderboard</h3></div>
+          <p class="chart-note">Success rate per environment; profit rate for AI Trading. Click a column to sort.</p>
+          <div id="leaderboard"></div>
+        </div>
+
+        <div class="card chart-card rise" style="margin-top:22px">
+          <div class="chart-head"><h3>The same models with the rules given</h3></div>
+          <p class="chart-note">Each model run twice on the same tasks: as in the benchmark, and with the hidden
+            transition rules written into the prompt.</p>
+          <div class="controls"><span class="ctl-label">Environment</span><div class="seg" id="rules-env" role="group" aria-label="Environment"></div></div>
+          <div id="chart-rules"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================== -->
+    <!-- Analysis                                                            -->
+    <!-- ================================================================== -->
+    <section class="band" id="analysis">
+      <div class="wrap">
+        <div class="section-head">
+          <span class="eyebrow">Analysis</span>
+          <h2 class="section-title">Where the <span class="accent">runs go wrong</span></h2>
+          <p class="section-sub">Failed trajectories were read by hand and the behaviour measured over every run:
+            what a model does with more steps, how often it repeats a rejected action, and which interventions
+            move the number.</p>
+        </div>
+
+        <div class="grid grid-2 rise">
+          <div class="card chart-card">
+            <div class="chart-head"><h3>More steps stop helping</h3></div>
+            <p class="chart-note">Cumulative share of tasks solved by each step, or profit rate for AI Trading. Most success curves flatten after an early
+              exploratory phase; a longer budget does not substitute for a model of the dynamics. The weakest
+              models track or trail a random policy.</p>
+            <div class="controls"><div class="seg" id="curves-env" role="group" aria-label="Environment"></div></div>
+            <div id="chart-curves"></div>
+          </div>
+          <div class="card chart-card">
+            <div class="chart-head"><h3>Action loops</h3></div>
+            <p class="chart-note">The share of a model's steps spent immediately repeating an action the
+              environment just rejected, against its success rate. Looping is inductive stagnation made
+              visible: the model does not turn the failed trial into a revised rule.</p>
+            <div class="controls"><div class="seg" id="loops-env" role="group" aria-label="Environment"></div></div>
+            <div id="chart-loops"></div>
+          </div>
+        </div>
+
+        <div class="card chart-card rise" style="margin-top:22px">
+          <div class="chart-head"><h3>What went wrong in the failed runs</h3></div>
+          <p class="chart-note">Every failed trajectory of Gemini 3 Pro Preview, read and labelled by hand; one
+            trajectory can carry several modes. Planning is almost never the problem.</p>
+          <div id="chart-failures"></div>
+        </div>
+
+        <div class="mini-grid rise" style="margin-top:22px">
+          <div class="card mini">
+            <h3>More reasoning helps</h3>
+            <p class="sub">gpt-oss-120b at three reasoning budgets. Higher effort improves Turn On Lights and AI Trading.
+              Repo System dips at medium effort; Energy Dispatch stays at zero.</p>
+            <div id="chart-effort"></div>
+          </div>
+          <div class="card mini">
+            <h3>A longer memory does not</h3>
+            <p class="sub">Repo System with more or fewer turns of history in the prompt. A window of about a hundred turns does best;
+              the full history does worse.</p>
+            <div id="chart-memory"></div>
+          </div>
+          <div class="card mini">
+            <h3>A worked example does not either</h3>
+            <p class="sub">One complete solution in the prompt leaves Repo System success where it was.
+              Eliciting induction takes more than a demonstration.</p>
+            <div id="chart-icl"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================== -->
+    <!-- Resources                                                           -->
+    <!-- ================================================================== -->
+    <section class="band" id="resources">
+      <div class="wrap">
+        <div class="section-head">
+          <span class="eyebrow">Resources</span>
+          <h2 class="section-title">Paper, code and <span class="accent">benchmark</span></h2>
+        </div>
+        <div class="grid grid-4 rise">
+          <a class="card feature" data-link="paper" href="https://arxiv.org/abs/2602.05843" target="_blank" rel="noopener">
+            <div class="ico">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+                <path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9Z" stroke-linejoin="round" />
+                <path d="M14 3v6h6M8 13h8M8 17h6" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </div>
+            <h3>Paper</h3>
+            <p>The full description of the four environments, the two suites and the analysis, on arXiv.</p>
+          </a>
+          <a class="card feature" data-link="code" href="https://github.com/xufangzhi/Odyssey-Arena" target="_blank" rel="noopener">
+            <div class="ico">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+                <path d="m8 6-6 6 6 6M16 6l6 6-6 6M14 3l-4 18" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </div>
+            <h3>Code</h3>
+            <p>The environments, the task generators and the evaluation harness.</p>
+          </a>
+          <a class="card feature" data-link="benchmark" href="https://github.com/xufangzhi/Odyssey-Arena/tree/main/test_data" target="_blank" rel="noopener">
+            <div class="ico">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+                <ellipse cx="12" cy="6" rx="8" ry="3" />
+                <path d="M4 6v6c0 1.66 3.58 3 8 3s8-1.34 8-3V6M4 12v6c0 1.66 3.58 3 8 3s8-1.34 8-3v-6" />
+              </svg>
+            </div>
+            <h3>Benchmark</h3>
+            <p>The OdysseyArena-Lite and OdysseyArena-Challenge task instances, in the code repository.</p>
+          </a>
+          <a class="card feature" href="#results">
+            <div class="ico">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+                <path d="M8 21h8M12 17v4M5 3h14v5a7 7 0 0 1-14 0V3Z" stroke-linejoin="round" />
+                <path d="M5 5H3v2a3 3 0 0 0 3 3M19 5h2v2a3 3 0 0 1-3 3" stroke-linejoin="round" />
+              </svg>
+            </div>
+            <h3>Leaderboard</h3>
+            <p>Every evaluated model on the four environments, sortable.</p>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================== -->
+    <!-- BibTeX                                                              -->
+    <!-- ================================================================== -->
+    <section class="band-tight" id="cite">
+      <div class="wrap">
+        <div class="section-head single">
+          <span class="eyebrow">Citation</span>
+          <h2 class="section-title">BibTeX</h2>
+        </div>
+        <div class="bibtex rise">
+          <div class="bibtex-bar">
+            <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+            <span class="fn">odysseyarena.bib</span>
+            <button class="copy-btn" id="copyBib" type="button">
+              <svg aria-hidden="true" width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+                <rect x="5.5" y="5.5" width="9" height="9" rx="1.6" />
+                <path d="M10.5 5.5v-3a1 1 0 0 0-1-1h-7a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h3" />
+              </svg>
+              <span>Copy</span>
+            </button>
+          </div>
+          <pre id="bibtex">@article{xu2026odysseyarena,
+  title={OdysseyArena: Benchmarking Large Language Models For Long-Horizon, Active and Inductive Interactions},
+  author={Xu, Fangzhi and Yan, Hang and Sun, Qiushi and Wu, Jinyang and Huang, Zixian and Huang, Muye and Gong, Jingyang and Ding, Zichen and Cheng, Kanzhi and Wang, Yian and Che, Xinyu and Sun, Zeyi and Zhang, Jian and Yin, Zhangyue and Luo, Haoran and Kao, Ben and Lin, Qika},
+  journal={arXiv preprint arXiv:2602.05843},
+  year={2026}
+}</pre>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ==================================================================== -->
+  <!-- Footer                                                                -->
+  <!-- ==================================================================== -->
+  <footer class="site">
+    <div class="wrap">
+      <div class="cols">
+        <div>
+          <div class="brand-line">
+            <img src="public/logo.svg" alt="">
+            <span>OdysseyArena</span>
+          </div>
+          <p style="font-size:14.5px;color:var(--text-dim);max-width:380px">
+            Environments whose rules are hidden, and a benchmark for the agents that have to find them.
+          </p>
+        </div>
+        <div>
+          <h2>Project</h2>
+          <ul>
+            <li><a href="#overview">Overview</a></li>
+            <li><a href="#environments">Environments</a></li>
+            <li><a href="#benchmark">Benchmark</a></li>
+            <li><a href="#results">Results</a></li>
+            <li><a href="#analysis">Analysis</a></li>
+            <li><a href="#cite">Cite</a></li>
+          </ul>
+        </div>
+        <div>
+          <h2>Artifacts</h2>
+          <ul>
+            <li><a href="https://arxiv.org/abs/2602.05843" target="_blank" rel="noopener">Paper</a></li>
+            <li><a href="https://github.com/xufangzhi/Odyssey-Arena" target="_blank" rel="noopener">Code</a></li>
+            <li><a href="https://github.com/xufangzhi/Odyssey-Arena/tree/main/test_data" target="_blank" rel="noopener">Benchmark</a></li>
+            <li><a href="#results">Leaderboard</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="fine">
+        <span>© 2026 The OdysseyArena authors.</span>
+        <span>Page content licensed
+          <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>.</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="static/js/odyssey-tables.js"></script>
+  <script src="static/js/odyssey-curves.js"></script>
+  <script src="static/js/odyssey-data.js"></script>
+  <script src="static/js/lights.js"></script>
+  <script src="static/js/hero.js"></script>
+  <script src="static/js/envs.js"></script>
+  <script src="static/js/charts.js"></script>
+  <script src="static/js/leaderboard.js"></script>
+  <script src="static/js/main.js"></script>
+  <script src="static/js/page.js"></script>
+</body>
+
+</html>

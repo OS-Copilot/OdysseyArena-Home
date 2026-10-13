@@ -1,0 +1,391 @@
+{
+ "source": "loop_sr.pdf (scatter digitized from the raster embedded in the PowerPoint-exported PDF; 'Infeasible Region' triangles taken from the PDF vector paths)",
+ "legend": [
+  {
+   "model": "Gemini 3 Pro Preview",
+   "marker": "D",
+   "rgb": [
+    0,
+    68,
+    27
+   ]
+  },
+  {
+   "model": "Gemini 2.5 Pro",
+   "marker": "D",
+   "rgb": [
+    169,
+    220,
+    163
+   ]
+  },
+  {
+   "model": "Grok 4 Fast",
+   "marker": "^",
+   "rgb": [
+    226,
+    85,
+    8
+   ]
+  },
+  {
+   "model": "GLM-4-32B-0414",
+   "marker": "v",
+   "rgb": [
+    102,
+    37,
+    6
+   ]
+  },
+  {
+   "model": "GLM-4-9B-Chat",
+   "marker": "v",
+   "rgb": [
+    128,
+    128,
+    128
+   ]
+  },
+  {
+   "model": "GPT-5",
+   "marker": "*",
+   "rgb": [
+    0,
+    0,
+    0
+   ]
+  },
+  {
+   "model": "gpt-oss-120b (high)",
+   "marker": "*",
+   "rgb": [
+    203,
+    24,
+    29
+   ]
+  },
+  {
+   "model": "gpt-oss-120b (medium)",
+   "marker": "*",
+   "rgb": [
+    252,
+    146,
+    114
+   ]
+  },
+  {
+   "model": "gpt-oss-120b (low)",
+   "marker": "*",
+   "rgb": [
+    250,
+    202,
+    93
+   ]
+  },
+  {
+   "model": "DeepSeek-V3.2",
+   "marker": "s",
+   "rgb": [
+    114,
+    98,
+    172
+   ]
+  },
+  {
+   "model": "Qwen3-235B-A22B-Instruct",
+   "marker": "o",
+   "rgb": [
+    8,
+    48,
+    107
+   ]
+  },
+  {
+   "model": "Qwen3-30B-A3B-Instruct",
+   "marker": "o",
+   "rgb": [
+    53,
+    133,
+    191
+   ]
+  },
+  {
+   "model": "Qwen3-4B-Instruct",
+   "marker": "o",
+   "rgb": [
+    166,
+    206,
+    228
+   ]
+  },
+  {
+   "model": "Llama 3.3 70B Instruct",
+   "marker": "p",
+   "rgb": [
+    73,
+    0,
+    106
+   ]
+  },
+  {
+   "model": "Llama 3.1 8B Instruct",
+   "marker": "p",
+   "rgb": [
+    250,
+    167,
+    183
+   ]
+  }
+ ],
+ "panels": [
+  {
+   "env": "Turn On Lights",
+   "points": [
+    {
+     "model": "Gemini 3 Pro Preview",
+     "loop_ratio": 0.0181,
+     "success_rate": 0.4418
+    },
+    {
+     "model": "GPT-5",
+     "loop_ratio": 0.0361,
+     "success_rate": 0.2687
+    },
+    {
+     "model": "Gemini 2.5 Pro",
+     "loop_ratio": 0.0206,
+     "success_rate": 0.2918
+    },
+    {
+     "model": "gpt-oss-120b (high)",
+     "loop_ratio": 0.007,
+     "success_rate": 0.2752
+    },
+    {
+     "model": "DeepSeek-V3.2",
+     "loop_ratio": 0.0677,
+     "success_rate": 0.1836
+    },
+    {
+     "model": "Grok 4 Fast",
+     "loop_ratio": 0.2833,
+     "success_rate": 0.1417
+    },
+    {
+     "model": "Qwen3-235B-A22B-Instruct",
+     "loop_ratio": 0.0279,
+     "success_rate": 0.1503
+    },
+    {
+     "model": "Qwen3-30B-A3B-Instruct",
+     "loop_ratio": 0.1485,
+     "success_rate": 0.117
+    },
+    {
+     "model": "gpt-oss-120b (medium)",
+     "loop_ratio": 0.0411,
+     "success_rate": 0.1671
+    },
+    {
+     "model": "GLM-4-32B-0414",
+     "loop_ratio": 0.1237,
+     "success_rate": 0.1425
+    },
+    {
+     "model": "gpt-oss-120b (low)",
+     "loop_ratio": 0.1677,
+     "success_rate": 0.0753
+    },
+    {
+     "model": "Llama 3.3 70B Instruct",
+     "loop_ratio": 0.1499,
+     "success_rate": 0.067
+    },
+    {
+     "model": "Qwen3-4B-Instruct",
+     "loop_ratio": 0.3148,
+     "success_rate": 0.0003
+    },
+    {
+     "model": "Llama 3.1 8B Instruct",
+     "loop_ratio": 0.1066,
+     "success_rate": 0.0671
+    },
+    {
+     "model": "GLM-4-9B-Chat",
+     "loop_ratio": 0.111,
+     "success_rate": 0.0011
+    }
+   ],
+   "axes": {
+    "x_lim": [
+     -0.0085,
+     0.3301
+    ],
+    "y_lim": [
+     -0.0224,
+     0.464
+    ]
+   },
+   "infeasible": [
+    [
+     0.3239,
+     0.4512
+    ],
+    [
+     0.3239,
+     0.1144
+    ],
+    [
+     0.0349,
+     0.4512
+    ]
+   ],
+   "infeasible_axes_fraction": [
+    [
+     0.9816,
+     0.9736
+    ],
+    [
+     0.9816,
+     0.2811
+    ],
+    [
+     0.1283,
+     0.9736
+    ]
+   ]
+  },
+  {
+   "env": "Repo System",
+   "points": [
+    {
+     "model": "Gemini 3 Pro Preview",
+     "loop_ratio": 0.0002,
+     "success_rate": 0.6588
+    },
+    {
+     "model": "GPT-5",
+     "loop_ratio": 0.0,
+     "success_rate": 0.6253
+    },
+    {
+     "model": "Gemini 2.5 Pro",
+     "loop_ratio": 0.0004,
+     "success_rate": 0.5003
+    },
+    {
+     "model": "gpt-oss-120b (high)",
+     "loop_ratio": 0.0106,
+     "success_rate": 0.1839
+    },
+    {
+     "model": "DeepSeek-V3.2",
+     "loop_ratio": 0.0052,
+     "success_rate": 0.4835
+    },
+    {
+     "model": "Grok 4 Fast",
+     "loop_ratio": 0.0081,
+     "success_rate": 0.3829
+    },
+    {
+     "model": "Qwen3-235B-A22B-Instruct",
+     "loop_ratio": 0.0054,
+     "success_rate": 0.1588
+    },
+    {
+     "model": "Qwen3-30B-A3B-Instruct",
+     "loop_ratio": 0.0152,
+     "success_rate": 0.267
+    },
+    {
+     "model": "gpt-oss-120b (medium)",
+     "loop_ratio": 0.0087,
+     "success_rate": 0.0255
+    },
+    {
+     "model": "GLM-4-32B-0414",
+     "loop_ratio": 0.0289,
+     "success_rate": 0.0926
+    },
+    {
+     "model": "gpt-oss-120b (low)",
+     "loop_ratio": 0.013,
+     "success_rate": 0.0921
+    },
+    {
+     "model": "Llama 3.3 70B Instruct",
+     "loop_ratio": 0.0041,
+     "success_rate": 0.1921
+    },
+    {
+     "model": "Qwen3-4B-Instruct",
+     "loop_ratio": 0.0599,
+     "success_rate": 0.1337
+    },
+    {
+     "model": "Llama 3.1 8B Instruct",
+     "loop_ratio": 0.3383,
+     "success_rate": 0.0004
+    },
+    {
+     "model": "GLM-4-9B-Chat",
+     "loop_ratio": 0.3076,
+     "success_rate": 0.0015
+    }
+   ],
+   "axes": {
+    "x_break": true,
+    "x_lim_left": [
+     -0.01,
+     0.07
+    ],
+    "x_lim_right": [
+     0.2899,
+     0.35
+    ],
+    "left_axes_fraction": 0.603,
+    "right_axes_fraction": 0.3772,
+    "y_lim": [
+     -0.0335,
+     0.6919
+    ]
+   },
+   "infeasible": [
+    [
+     0.3467,
+     0.6728
+    ],
+    [
+     0.3467,
+     0.0004
+    ],
+    [
+     0.0091,
+     0.6728
+    ]
+   ],
+   "infeasible_axes_fraction": [
+    [
+     0.979,
+     0.9736
+    ],
+    [
+     0.979,
+     0.0467
+    ],
+    [
+     0.1436,
+     0.9736
+    ]
+   ],
+   "infeasible_segment": [
+    "R",
+    "R",
+    "L"
+   ],
+   "note": "Panel has a broken x-axis (left part ~0 to 0.07, right part ~0.29 to 0.35, different scales). 'infeasible' vertices are mapped through the sub-axis each vertex lies in ('infeasible_segment'); the hypotenuse is a straight line in display space, not in data space, so use 'infeasible_axes_fraction' (x, y as fractions of the full axes box, origin bottom-left) to redraw it."
+  }
+ ]
+}
