@@ -223,7 +223,13 @@ window.OdysseyEnvs = function (root, D) {
     elCount.textContent = (state.i + 1) + " / " + st.length;
     ({ lights: renderLights, trading: renderTrading, energy: renderEnergy, repo: renderRepo })[state.env](state.i);
     var cur = elSteps.children[state.i];
-    if (cur && cur.scrollIntoView && elSteps.scrollHeight > elSteps.clientHeight) cur.scrollIntoView({ block: "nearest" });
+    if (cur && elSteps.scrollHeight > elSteps.clientHeight) {
+      // Keep the active step visible without scrolling the page or other ancestors.
+      var top = elSteps.getBoundingClientRect().top + elSteps.clientTop;
+      var row = cur.getBoundingClientRect();
+      if (row.top < top) elSteps.scrollTop += row.top - top;
+      else if (row.bottom > top + elSteps.clientHeight) elSteps.scrollTop += row.bottom - top - elSteps.clientHeight;
+    }
   }
 
   select("lights");

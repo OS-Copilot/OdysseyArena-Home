@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Environment scroll regression</title>
+<style>
+  body { margin: 24px; font: 16px/1.5 system-ui, sans-serif; }
+  iframe { display: block; border: 1px solid #aaa; }
+  .pass { color: #176b35; }
+  .fail { color: #b42318; }
+</style>
+<h1>Environment scroll regression</h1>
+<p>Serve the repository and open this page in a browser. Tests use the real component and CSS.</p>
+<p id="summary">Running…</p>
+<ul id="results"></ul>
+<script>
+  (async function () {
+    "use strict";
+    var base = new URL("../../", location.href).href;
+    var version = "?test=" + Date.now();
+    var results = document.getElementById("results");
+    var passed = 0, failed = 0;
+    var frame;
+    function check(ok, name, detail) {
+      var item = document.createElement("li");
+      item.className = ok ? "pass" : "fail";
+      item.textContent = (ok ? "PASS " : "FAIL ") + name + (detail ? " — " + detail : "");
+      results.appendChild(item);
+      if (ok) passed++; else failed++;
+    }
+    function wait(ms) { return new Promise(function (resolve) { setTimeout(resolve, ms); }); }
+    function resetPage(w) { w.scrollTo({ top: 0, behavior: "instant" }); }
+    function visibleInList(list, item) {
+      var box = list.getBoundingClientRect(), row = item.getBoundingClientRect();
+      return row.top >= box.top - 1 && row.bottom <= box.bottom + 1;
+    }
+
+    try {
+      for (var width of [1280, 390]) {
+        frame = document.createElement("iframe");
+        frame.width = width;
+        frame.height = 720;
+        frame.title = width + "px environment fixture";
+        var loaded = new Promise(function (resolve) { frame.onload = resolve; });
+        frame.srcdoc = '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">' +
+          '<link rel="stylesheet" href="' + base + 'static/css/main.css' + version + '">' +
+          '<style>html { scroll-behavior: auto; } .spacer { height: 100vh; } ' +
+          '#env-walk { margin: 0 16px; }</style></head><body>' +
+          '<div class="spacer"></div><div class="card ew-card" id="env-walk"></div>' +
+          '<div class="spacer"></div>' +
+          '<script src="' + base + 'static/js/odyssey-tables.js' + version + '"><\/script>' +
+          '<script src="' + base + 'static/js/odyssey-data.js' + version + '"><\/script>' +
+          '<script src="' + base + 'static/js/envs.js' + version + '"><\/script>' +
+          '<script>window.walkthrough = OdysseyEnvs(document.getElementById("env-walk"), ODYSSEY);<\/script>' +
+          '</body></html>';
+        document.body.appendChild(frame);
+        await loaded;
+        var w = frame.contentWindow, doc = frame.contentDocument;
+        var root = doc.getElementById("env-walk");
+        var list = root.querySelector(".ew-steps");
+        var label = width + "px: ";
+        check(list.scrollHeight > list.clientHeight, label + "fixture has an overflowing action list");
+        check(w.scrollY === 0, label + "initialization preserves page position", "scrollY=" + w.scrollY);
+
+        resetPage(w);
+        list.lastElementChild.click();
+        check(w.scrollY === 0, label + "selecting a step preserves page position", "scrollY=" + w.scrollY);
+        check(list.scrollTop > 0 && visibleInList(list, list.lastElementChild), label + "last step scrolls into the list viewport");
+
+        resetPage(w);
+        root.querySelector(".ew-next").click();
+        check(w.scrollY === 0 && list.scrollTop === 0, label + "wrapping to the first step scrolls only the list");
+
+        resetPage(w);
+        root.querySelector(".ew-prev").click();
+        check(w.scrollY === 0 && visibleInList(list, list.lastElementChild), label + "previous step scrolls only the list");
+
+        resetPage(w);
+        root.querySelectorAll(".ew-tab")[3].click();
+        check(w.scrollY === 0, label + "switching environments preserves page position", "scrollY=" + w.scrollY);
+
+        w.walkthrough.select("lights");
+        resetPage(w);
+        root.querySelector(".ew-play").click();
+        await wait(1900);
+        w.walkthrough.destroy();
+        check(root.querySelector(".count").textContent !== "1 / 9" && w.scrollY === 0,
+          label + "offscreen playback preserves page position", "scrollY=" + w.scrollY);
+        frame.remove();
+      }
+    } catch (error) {
+      check(false, "test execution", error.stack);
+    } finally {
+      if (frame) frame.remove();
+      var summary = document.getElementById("summary");
+      summary.textContent = passed + " passed, " + failed + " failed";
+      summary.className = failed ? "fail" : "pass";
+      document.title = (failed ? "FAIL" : "PASS") + " — Environment scroll regression";
+    }
+  })();
+</script>
+</html>
